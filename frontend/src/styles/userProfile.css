@@ -1,0 +1,9 @@
+.user-profile-container {
+  display: flex;
+  min-height: 80vh;
+  flex-wrap: wrap;
+}
+.user-profile-content {
+  flex: 1;
+  padding: 4px;
+}
