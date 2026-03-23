@@ -5,6 +5,7 @@ import express from "express";
 import http from 'http';
 import { config } from './config/parseConfig.js';
 import cors from 'cors'
+import dashboard from "./dashboard.js";
 dotenv.config();
 
 const __dirname = path.resolve();
@@ -12,6 +13,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use('/dashboard', dashboard);
 // Serve static assets from the /public folder
 app.use('/public', express.static(path.join(__dirname, '/public')));
 

@@ -5,12 +5,8 @@ import {
   Typography,
   Grid,
   Card,
-  CardMedia,
-  CardContent,
-  CardActions,
   Button,
   IconButton,
-  Chip,
   Box,
   TextField,
   InputAdornment,
@@ -31,9 +27,6 @@ import {
   Tooltip
 } from "@mui/material";
 import {
-  ShoppingCart as CartIcon,
-  Favorite as FavoriteIcon,
-  FavoriteBorder as FavoriteBorderIcon,
   Search as SearchIcon,
   FilterList as FilterIcon,
   Clear as ClearIcon,
@@ -46,50 +39,7 @@ import { styled } from "@mui/material/styles";
 import { Link as RouterLink } from "react-router-dom";
 import api from "../services/api";
 import { fetchProducts } from "../services/productServices";
-
-
-const StyledCard = styled(Card)(({ theme }) => ({
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  transition: 'all 0.3s ease',
-  position: 'relative',
-  '&:hover': {
-    transform: 'translateY(-8px)',
-    boxShadow: theme.shadows[12],
-    '& .quick-view-btn': {
-      opacity: 1,
-      transform: 'translateY(0)',
-    },
-  },
-}));
-
-const FavoriteButton = styled(IconButton)(({ theme, isfavorite }) => ({
-  position: 'absolute',
-  top: 8,
-  right: 8,
-  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  color: isfavorite === 'true' ? theme.palette.error.main : theme.palette.grey[500],
-  '&:hover': {
-    backgroundColor: 'white',
-    transform: 'scale(1.1)',
-  },
-  transition: 'all 0.2s ease',
-}));
-
-const QuickViewButton = styled(Button)({
-  position: 'absolute',
-  bottom: 80,
-  left: '50%',
-  transform: 'translateX(-50%) translateY(20px)',
-  opacity: 0,
-  transition: 'all 0.3s ease',
-  backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  color: 'white',
-  '&:hover': {
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-  },
-});
+import ProductCard from "../components/ProductCard";
 
 const ScrollToTop = styled(Fab)(({ theme }) => ({
   position: 'fixed',
@@ -106,11 +56,11 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [page, setPage] = useState(1);
-  const [favorites, setFavorites] = useState({});
+  // const [favorites, setFavorites] = useState({});
   const [viewMode, setViewMode] = useState('grid');
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [categories, setCategories] = useState([]);
-  const itemsPerPage = 8;
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchAllProducts();
@@ -120,13 +70,13 @@ const Products = () => {
   }, []);
 
   const fetchAllProducts = async () => {
-      try {
-          setLoading(true);
+    try {
+      setLoading(true);
       // Using your backend API endpoint
       const response = await fetchProducts();
       console.log("🚀 ~ fetchAllProducts ~ response:", response)
       setProducts(response?.result);
-      
+
       // Extract unique categories
       const uniqueCategories = [...new Set(response?.result.map(p => p.categories))];
       setCategories(['all', ...uniqueCategories]);
@@ -176,25 +126,6 @@ const Products = () => {
     page * itemsPerPage
   );
 
-  const handleFavoriteToggle = (productId) => {
-    setFavorites(prev => ({
-      ...prev,
-      [productId]: !prev[productId]
-    }));
-  };
-
-  const handleAddToCart = async (product) => {
-    try {
-      await api.post("/cart/add", {
-        productId: product.id,
-        quantity: 1
-      });
-      // Show success message
-    } catch (err) {
-      console.error("Failed to add to cart:", err);
-    }
-  };
-
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedCategory("all");
@@ -205,8 +136,8 @@ const Products = () => {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           action={
             <Button color="inherit" size="small" onClick={fetchProducts}>
               Retry
@@ -320,7 +251,7 @@ const Products = () => {
                   Clear
                 </Button>
                 <Tooltip title="Grid View">
-                  <IconButton 
+                  <IconButton
                     color={viewMode === 'grid' ? 'primary' : 'default'}
                     onClick={() => setViewMode('grid')}
                   >
@@ -328,7 +259,7 @@ const Products = () => {
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="List View">
-                  <IconButton 
+                  <IconButton
                     color={viewMode === 'list' ? 'primary' : 'default'}
                     onClick={() => setViewMode('list')}
                   >
@@ -351,7 +282,7 @@ const Products = () => {
         <Grid container spacing={3}>
           {loading ? (
             // Loading skeletons
-            [...Array(8)].map((_, index) => (
+            [...Array(10)].map((_, index) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
                 <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
                 <Skeleton variant="text" height={30} sx={{ mt: 1 }} />
@@ -361,95 +292,7 @@ const Products = () => {
             ))
           ) : displayedProducts.length > 0 ? (
             displayedProducts.map((product) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={product.objectId}>
-                <StyledCard>
-                  <CardMedia
-                  width="200px"
-                    component="img"
-                    // height="200"
-                    image={product.image || "https://via.placeholder.com/300x200?text=No+Image"}
-                    alt={product.title}
-                    sx={{ objectFit: 'cover' }}
-                  />
-                  
-                  <FavoriteButton 
-                    isfavorite={favorites[product.id]?.toString()}
-                    onClick={() => handleFavoriteToggle(product.id)}
-                  >
-                    {favorites[product.id] ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                  </FavoriteButton>
-
-                  <QuickViewButton 
-                    className="quick-view-btn"
-                    size="small"
-                    variant="contained"
-                    component={RouterLink}
-                    to={`/product/${product.objectId}`}
-                  >
-                    Quick View
-                  </QuickViewButton>
-
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography 
-                      variant="h6" 
-                      component="h2" 
-                      sx={{ 
-                        fontWeight: 600,
-                        mb: 1,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {product.title}
-                    </Typography>
-                    
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <Chip 
-                        label={product.categories} 
-                        size="small" 
-                        color="primary"
-                        variant="outlined"
-                      />
-                      {product.quantity <= 5 && (
-                        <Chip 
-                          label="Low Stock" 
-                          size="small" 
-                          color="warning"
-                          variant="outlined"
-                        />
-                      )}
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <Rating value={product.rating || 4} size="small" readOnly />
-                      <Typography variant="body2" color="text.secondary">
-                        ({product.reviews || 0})
-                      </Typography>
-                    </Box>
-                    
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Quantity: {product.quantity}
-                    </Typography>
-                    
-                    <Typography variant="h5" color="primary" sx={{ fontWeight: 700 }}>
-                      ${product.price?.toFixed(2)}
-                    </Typography>
-                  </CardContent>
-                  
-                  <CardActions sx={{ p: 2, pt: 0 }}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      startIcon={<CartIcon />}
-                      onClick={() => handleAddToCart(product)}
-                      disabled={product.quantity === 0}
-                    >
-                      {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-                    </Button>
-                  </CardActions>
-                </StyledCard>
-              </Grid>
+              <ProductCard key={product.objectId} product={product} />
             ))
           ) : (
             <Grid item xs={12}>

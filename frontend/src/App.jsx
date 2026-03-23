@@ -4,6 +4,8 @@ import { Routes, Route } from "react-router-dom";
 import { Box, CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 // import { initializeParse } from "./parse/config";
 
+// toastify 
+import { ToastContainer } from 'react-toastify';
 // Components
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -22,6 +24,10 @@ import Profile from "./pages/Profile";
 import MyProducts from "./pages/MyProducts";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import CartPage from "./pages/CartPage";
+import Checkout from "./pages/Checkout";
+import OrdersPage from "./pages/OrdersPage";
+import MyProductsPage from "./pages/MyProductsPage";
 // import AddProduct from "./pages/AddProduct";
 
 // Create theme
@@ -77,10 +83,14 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/products" element={<Products />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<Checkout />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             
             <Route path="/profile" element={<UserProfile />}>
               <Route index element={<Profile />} />
+              <Route path="orders" element={<OrdersPage />} />
+              <Route path="fetch-my-products" element={<MyProductsPage />} />
               <Route path="settings" element={<Settings />} />
               <Route path="my-products" element={<MyProducts />} />
               <Route path="add-product" element={<AddProduct />} />
@@ -89,6 +99,7 @@ function App() {
         </Box>
         <Footer />
       </Box>
+      <ToastContainer/>
     </ThemeProvider>
   );
 }

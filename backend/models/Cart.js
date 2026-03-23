@@ -1,7 +1,7 @@
 
 const createCartSchema = async () => {
   const cartSchema = new Parse.Schema("Cart");
-
+  // console.log("cart class is called");
   try {
     // Check if schema already exists
     await cartSchema.get();

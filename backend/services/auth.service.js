@@ -62,25 +62,7 @@ export const loginService = async (email, password) => {
     const user = await Parse.User.logIn(email, password);
     console.log("🚀 ~ loginService ~ user:", user)
 
-    // // Find roles
-    // const roleQuery = new Parse.Query(Parse.Role);
-    // roleQuery.equalTo("users", user); // relation check
-    // const roles = await roleQuery.find({ useMasterKey: true });
-    // const roleNames = roles.map(r => r.get("name")); // ["Admin"], ["Customer"],
-
-    // Parse.Push.send({
-    //   channels: ["Giants", "Mets"],
-    //   data: {
-    //     alert: "The Giants won against the Mets 2-3."
-    //   }
-    // })
-    //   .then(function () {
-    //     // Push was successful
-    //     console.log("Login successfully")
-    //   }, function (error) {
-    //     // Handle error
-    //     console.log("🚀 ~ loginService ~ error:", error)
-    //   });
+   
 
     return {
       success: true,
@@ -100,3 +82,114 @@ export const loginService = async (email, password) => {
     }
   }
 }
+
+
+export const updateProfileService = async (name, email, phone, image, sessionToken) => {
+  try {
+
+    // FIND USER BY EMAIL
+    const userQuery = new Parse.Query(Parse.User);
+    userQuery.equalTo("email", email);
+
+    const user = await userQuery.first({ sessionToken, useMasterKey: true });
+
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found",
+      };
+    }
+
+    // UPDATE FIELDS
+    if (name) user.set("name", name);
+    if (phone) user.set("phone", phone);
+    if (email) user.set("email", email);
+    if (image) user.set("image", image);
+
+    // SAVE USER
+    const result = await user.save(null, { useMasterKey: true });
+
+    return {
+      success: true,
+      message: "Profile Updated Successfully",
+      user: {
+        id: result.id,
+        username: result.get("username"),
+        email: result.get("email"),
+        name: result.get("name"),
+        phone: result.get("phone"),
+        image: result.get("image"),
+      },
+    };
+
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
+export const getUserProfileService = async (user) => {
+  try {
+    const query  = new Parse.Query(Parse.User);
+    const currentUser = await query.get(user.id, {
+      useMasterKey: true,
+    });
+
+    // 4. Return clean user profile
+    return {
+      id: currentUser.id,
+      name: currentUser.get("name"),
+      email: currentUser.get("email"),
+      phone: currentUser.get("phone"),
+      image: currentUser.get("image"),
+      role: currentUser.get("role") || "user",
+      createdAt: currentUser.createdAt,
+    };
+
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
+
+export const changePasswordService = async (oldPassword, newPassword, user) => {
+  try {
+    // First, verify the old password by logging in
+    try {
+      await Parse.User.logIn(user.get("username"), oldPassword);
+    } catch (loginError) {
+      throw new Error("Current password is incorrect");
+    }
+
+    // Get the user to update
+    const query = new Parse.Query(Parse.User);
+    const currentUser = await query.get(user.id, { useMasterKey: true });
+    
+    if (!currentUser) {
+      throw new Error("User not found");
+    }
+
+    // Set the new password
+    currentUser.setPassword(newPassword);
+    
+    // Save the user with master key
+    await currentUser.save(null, { useMasterKey: true });
+    
+    return {
+      success: true,
+      message: "Password updated successfully"
+    };
+    
+  } catch (error) {
+    console.error("Password change error:", error);
+    return {
+      success: false,
+      message: error.message || "Failed to update password"
+    };
+  }
+};

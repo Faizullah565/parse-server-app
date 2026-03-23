@@ -26,8 +26,8 @@ export const fetchAllProduct = async(request)=>{
 // =============== DELETE PRODUCT =========================
 export const deleteProduct = async(request)=>{
     const user= request.user;
-    const {productId} = request.params
-    const cart = await deleteProductService(user, productId)
+    const {objectId} = request.params
+    return await deleteProductService(user, objectId)
 }
 
 // =============== UPDATE PRODUCT =========================

@@ -1,36 +1,66 @@
 
 // ================== ADD ITEM CART SERVICE ====================================
-export const addCartService = async (title, quantity, price, product, user) => {
-    console.log("🚀 ~ addCartService ~ user:", user)
-    const Cart = Parse.Object.extend("Cart");
-    const cart = new Cart();
-    cart.set("title", title);
-    cart.set("price", price);
-    cart.set("quantity", quantity);
-    cart.set("product", product)
-    cart.set("user", user)
-    //   product.set("user", user);
-    await cart.save();
+export const addCartService = async (title, price, image, objectId, user) => {
+  const Cart = Parse.Object.extend("Cart");
+
+  // ✅ Create product pointer
+  const productPointer = new Parse.Object("_Product");
+  productPointer.id = objectId;
+
+  // ✅ Step 1: Check existing cart item
+  const query = new Parse.Query(Cart);
+  query.equalTo("user", user);
+  query.equalTo("product", productPointer);
+
+  const existingItem = await query.first();
+
+  if (existingItem) {
+    // ✅ Step 2: Increase quantity
+    existingItem.increment("quantity", 1);
+    await existingItem.save();
+
     return {
-        success: true,
-        message: "Item added to Cart",
-        cart: {
-            id: cart.id,
-            title: cart.get("title"),
-            price: cart.get("price"),
-            quantity: cart.get("quantity")
-        }
+      success: true,
+      message: "Quantity updated",
+      cart: {
+        id: existingItem.id,
+        quantity: existingItem.get("quantity"),
+      },
     };
-}
+  }
+
+  // ✅ Step 3: Create new cart item
+  const cart = new Cart();
+  cart.set("title", title);
+  cart.set("price", price);
+  cart.set("quantity", 1);
+  cart.set("product", productPointer);
+  cart.set("image", image);
+  cart.set("user", user);
+
+  await cart.save();
+
+  return {
+    success: true,
+    message: "Item added to Cart",
+    cart: {
+      id: cart.id,
+      title: cart.get("title"),
+      price: cart.get("price"),
+      quantity: cart.get("quantity"),
+    },
+  };
+};
 
 // ============== UPDATE CART SERVICE ===============================
-export const updateCartService = async (user, product, quantity) => {
+export const updateCartService = async (user, objectId, quantity) => {
     const Cart = Parse.Object.extend("Cart");
     const query = new Parse.Query(Cart);
     try {
-        // Filter by user and product
+        // Filter by user and Item Id
         query.equalTo("user", user);
-        query.equalTo("product", product);
+        query.equalTo("objectId", objectId);
+
         // Get single cart item
         const cart = await query.first({ useMasterKey: true });
         if (!cart) {
@@ -46,14 +76,14 @@ export const updateCartService = async (user, product, quantity) => {
 };
 
 // =================== DELETE CART SERVICE ===========================
-export const deleteCartService = async (user, cartId) => {
+export const deleteCartService = async (user, objectId) => {
     const Cart = Parse.Object.extend("Cart");
     const query = new Parse.Query(Cart);
     try {
         // Filter by user
         query.equalTo("user", user);
         // Filter by cart objectId
-        query.equalTo("objectId", cartId);
+        query.equalTo("objectId", objectId);
         // Get the cart item
         const cartItem = await query.first({ useMasterKey: true });
         if (!cartItem) {
@@ -90,3 +120,33 @@ export const fetchUserCartService = async (user) => {
         return error
     }
 }
+
+// ==== CLEAR CART ============================
+export const clearCartService = async (user) => {
+  const Cart = Parse.Object.extend("Cart");
+  const query = new Parse.Query(Cart);
+
+  try {
+    // Filter by user
+    query.equalTo("user", user);
+
+    // Get ALL items
+    const cartItems = await query.find({ useMasterKey: true });
+
+    if (!cartItems.length) {
+      return { message: "Cart already empty" };
+    }
+
+    // Delete ALL items
+    await Parse.Object.destroyAll(cartItems, { useMasterKey: true });
+
+    return {
+      success: true,
+      message: "Cart cleared successfully!",
+    };
+
+  } catch (error) {
+    console.log("🚀 clearCartService error:", error);
+    throw error;
+  }
+};

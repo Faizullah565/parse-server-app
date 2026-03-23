@@ -27,32 +27,50 @@ export const addProductService = async (title, price, quantity, image, categorie
   acl.setWriteAccess(user, true);       // owner update/delete
   // acl.setWriteAccess(user, false);       // by default false
   product.setACL(acl);
-  // ============== SEND NOTIFICATION USE NODE-NOTIFIER =======================
 
-  notifier.notify({
-    title: 'E-commerce store notification',
-    message: 'New Product Added!',
-    icon: path.join(__dirname, "..", "public", 'e-store-logo-icon.png'), // Absolute path (doesn't work on balloons)
-    // sound: true, // Only Notification Center or Windows Toasters
-    wait: true // Wait with callback, until user action is taken against notification, does not apply to Windows Toasters as they always wait or notify-send as it does not support the wait option
-  });
-  
+  // ============== SEND NOTIFICATION USE NODE-NOTIFIER =======================
+  // notifier.notify({
+  //   title: 'E-commerce store notification',
+  //   message: 'New Product Added!',
+  //   icon: path.join(__dirname, "..", "public", 'e-store-logo-icon.png'), // Absolute path (doesn't work on balloons)
+  //   // sound: true, // Only Notification Center or Windows Toasters
+  //   wait: true // Wait with callback, until user action is taken against notification, does not apply to Windows Toasters as they always wait or notify-send as it does not support the wait option
+  // });
+
   // SEND WEB PUSH NOTIFICATION 
 
   const PushSubscription = Parse.Object.extend("PushSubscription")
   const query = new Parse.Query(PushSubscription)
+  query.equalTo("active", true)
+  const users = await query.find({ useMasterKey: true })
+  // console.log("🚀 ~ addProductService ~ users:", users)
+  for (let sub of users) {
+    const pushData = {
+      endpoint: sub.get("endpoint"),
+      keys: {
+        p256dh: sub.get("p256dh"),
+        auth: sub.get("auth"),
+      },
+    };
 
-  const users = await query.find({useMasterKey:true})
-  for(let sub of users){
-    await webpush.sendNotification(
-      sub.get("subscription"),
+    const notifications = await webpush.sendNotification(
+      pushData,
       JSON.stringify({
-        title: "E-commerce Store",
-        message: "New Product Added!"
+        title: "🛍️ New Product Added!",
+        body: `New Product ${title} - Rs. ${price/quantity}`,
+        icon: "/icon.png",
+        badge: "badge.png",
+        url: "/products",
+        actions: [
+          {
+            action: "view",
+            title: "View Product"
+          }
+        ]
       })
-    )
+    );
   }
-  
+
   await product.save(null, { useMasterKey: true });
   return {
     success: true,
@@ -73,7 +91,7 @@ export const fetchAllProductServices = async () => {
 
   // Fetch all products
   try {
-    const results = await query.find({useMasterKey:true});
+    const results = await query.find({ useMasterKey: true });
     return results
   } catch (error) {
     console.error("Error retrieving products: " + error.code + " " + error.message);
@@ -82,13 +100,13 @@ export const fetchAllProductServices = async () => {
 }
 
 // ============== DELETE LOGIN USER PRODUCT SERVICE ======================
-export const deleteProductService = async (user, productId) => {
+export const deleteProductService = async (user, objectId) => {
   const Product = Parse.Object.extend("Product")
   const query = new Parse.Query(Product)
 
   try {
     query.equalTo("user", user)
-    query.equalTo("objectId", productId)
+    query.equalTo("objectId", objectId)
     const product = await query.first({ useMasterKey: true });
     if (!product) {
       throw new Error("Product not found");

@@ -10,23 +10,49 @@ import {
   Divider
 } from "@mui/material";
 import { Edit as EditIcon } from "@mui/icons-material";
-
+import { useEffect } from "react";
+import { useState } from "react";
+import { getUserProfile } from '../services/authService.js'
+import { useNavigate } from "react-router-dom";
 const Profile = () => {
-  const user = {
-    name: "Faizullah",
-    email: "ali@example.com",
-    phone: "03001234567",
-    role: "user",
-    createdAt: "2025-12-10T10:20:30Z"
-  };
+  const [user, setUser] = useState({})
+
+  const navigate = useNavigate()
+  useEffect(() => {
+    fetchUserProfile()
+  }, [])
+
+  const fetchUserProfile = async () => {
+    try {
+      const profile = await getUserProfile();
+      const data = profile?.result;
+
+    // CLEAN DATA HERE (MAIN FIX)
+    const cleanedUser = {
+      ...data,
+      role:
+        typeof data?.role === "object"
+          ? data?.role?.name || "user"
+          : data?.role,
+      createdAt:
+        typeof data?.createdAt === "object"
+          ? data?.createdAt?.iso || null
+          : data?.createdAt,
+    }; 
+    setUser(cleanedUser);// Set user state
+    } catch (err) {
+      console.error("Failed to fetch user profile:", err);
+    }
+  }
 
   const getInitials = (name) => {
-    return name.charAt(0).toUpperCase();
+    return name?.charAt(0).toUpperCase();
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString();
-  };
+  if (!dateString) return "N/A"; // handle undefined/null
+  return new Date(dateString).toLocaleDateString();
+};
 
   const InfoRow = ({ label, value }) => (
     <Box sx={{ mb: 2 }}>
@@ -41,9 +67,9 @@ const Profile = () => {
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
+      {/* <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
         My Profile
-      </Typography>
+      </Typography> */}
 
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
         {/* Avatar Section */}
@@ -58,15 +84,18 @@ const Profile = () => {
               fontWeight: 'bold'
             }}
           >
-            {getInitials(user.name)}
+            {
+            user.image? <img src={user?.image} alt="" />
+            : getInitials(user?.name)
+             }
           </Avatar>
-          
+
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 600 }}>
-              {user.name}
+              {user?.name}
             </Typography>
             <Typography color="text.secondary">
-              {user.email}
+              {user?.email}
             </Typography>
           </Box>
         </Box>
@@ -76,26 +105,26 @@ const Profile = () => {
         {/* User Info Grid */}
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <InfoRow label="Full Name" value={user.name} />
+            <InfoRow label="Full Name" value={user?.name} />
           </Grid>
-          
+
           <Grid item xs={12} md={6}>
-            <InfoRow label="Email" value={user.email} />
+            <InfoRow label="Email" value={user?.email} />
           </Grid>
-          
+
           <Grid item xs={12} md={6}>
-            <InfoRow label="Phone" value={user.phone || "Not provided"} />
+            <InfoRow label="Phone" value={user?.phone || "Not provided"} />
           </Grid>
-          
+
           <Grid item xs={12} md={6}>
-            <InfoRow 
-              label="Role" 
-              value={user.role.charAt(0).toUpperCase() + user.role.slice(1)} 
+            <InfoRow
+              label="Role"
+              value={user?.role}
             />
           </Grid>
-          
+
           <Grid item xs={12}>
-            <InfoRow label="Account Created" value={formatDate(user.createdAt)} />
+            <InfoRow label="Account Created" value={formatDate(user?.createdAt)} />
           </Grid>
         </Grid>
 
@@ -112,6 +141,7 @@ const Profile = () => {
               textTransform: 'none',
               fontWeight: 500
             }}
+          onClick={()=>navigate("settings")}
           >
             Edit Profile
           </Button>

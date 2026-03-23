@@ -14,7 +14,8 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Divider
+  Divider,
+  Badge
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -23,9 +24,11 @@ import {
   Logout,
   ShoppingBag
 } from "@mui/icons-material";
-
+import { useCart } from "../context/CartContext";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const { cart } = useCart()
 
   const menuItems = [
     { text: 'Products', path: '/products', icon: <ShoppingBag /> },
@@ -33,6 +36,7 @@ const Navbar = () => {
     { text: 'Profile', path: '/profile', icon: <Person /> },
     { text: 'Logout', path: '/', icon: <Logout /> },
   ];
+
 
   return (
     <AppBar position="static" sx={{ bgcolor: 'grey.800' }}>
@@ -52,15 +56,32 @@ const Navbar = () => {
               Products
             </Button>
             <IconButton color="inherit" component={RouterLink} to="/cart">
+              <Badge
+                badgeContent={cart?.length}
+                // badgeContent={
+                //   cartSize?.length
+                // }
+                color="primary"
+                sx={{
+                  position: "absolute",
+                  top: 6,
+                  right: 8,
+                  "& .MuiBadge-badge": {
+                    fontSize: "0.7rem",
+                    fontWeight: "bold",
+                  },
+                }}
+              />
+              {/* {cart?.length} */}
               <ShoppingCart />
             </IconButton>
             <IconButton color="inherit" component={RouterLink} to="/profile">
               <Person />
             </IconButton>
-            <Button 
-              color="inherit" 
-              component={RouterLink} 
-              to="/" 
+            <Button
+              color="inherit"
+              component={RouterLink}
+              to="/"
               startIcon={<Logout />}
             >
               Logout
@@ -86,8 +107,8 @@ const Navbar = () => {
               <List>
                 {menuItems.map((item) => (
                   <ListItem key={item.text} disablePadding>
-                    <ListItemButton 
-                      component={RouterLink} 
+                    <ListItemButton
+                      component={RouterLink}
                       to={item.path}
                       onClick={() => setIsOpen(false)}
                     >

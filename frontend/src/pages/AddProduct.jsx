@@ -23,6 +23,7 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import InventoryIcon from "@mui/icons-material/Inventory";
 
 import { uploadImage, addProduct } from "../services/productServices";
+import { toast } from "react-toastify";
 
 const categoriesList = [
   "Shoes",
@@ -124,15 +125,15 @@ export default function AddProduct() {
 
     try {
       await addProduct(productData);
-      alert("Product Added Successfully");
+      toast.success("Product Added Successfully");
       
       // Reset form
-      setTitle("");
-      setPrice("");
-      setQuantity("");
-      setDescription("");
-      setCategories([]);
-      setImage("");
+      // setTitle("");
+      // setPrice("");
+      // setQuantity("");
+      // setDescription("");
+      // setCategories([]);
+      // setImage("");
     } catch (error) {
       console.log(error);
     }

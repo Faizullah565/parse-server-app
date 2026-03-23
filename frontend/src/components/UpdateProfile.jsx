@@ -1,275 +1,137 @@
 import { useState } from "react";
-import {
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  Box,
-  Alert,
-  Snackbar,
-  Avatar,
-  InputAdornment,
-  Divider,
-  Grid,
-  Chip
-} from "@mui/material";
-import {
-  Person as PersonIcon,
-  Phone as PhoneIcon,
-  Save as SaveIcon,
-  Verified as VerifiedIcon,
-  Edit as EditIcon
-} from "@mui/icons-material";
-import { styled } from '@mui/material/styles';
+import { TextField, Button, Box, Avatar, Typography } from "@mui/material";
+import axios from "axios";
+import { uploadImage } from "../services/productServices";
 
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
-  borderRadius: theme.spacing(2),
-  backgroundColor: theme.palette.background.paper,
-  maxWidth: 600,
-  margin: '0 auto',
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2),
-  }
-}));
+const PARSE_SERVER_URL = import.meta.env.VITE_PARSE_SERVER_URL || "http://localhost:1337/parse";
+const APP_ID = import.meta.env.VITE_PARSE_APP_ID || "parse_server_app";
+const sessionToken = localStorage.getItem("sessionToken");
 
 const UpdateProfile = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: ""
-  });
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [notification, setNotification] = useState({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
 
-  const validateForm = () => {
-    const newErrors = {};
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    } else if (formData.name.length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+  const handleImageChange = async (e) => {
+
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    try {
+
+      const url = await uploadImage(file);
+
+      setImageUrl(url);
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Image upload failed");
+
     }
 
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    } else if (!phoneRegex.test(formData.phone.replace(/\D/g, ''))) {
-      newErrors.phone = 'Please enter a valid 10-digit phone number';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
   };
 
   const handleSubmit = async (e) => {
+
     e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
-
-    setLoading(true);
-
     try {
-      const response = await fetch("/update-profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
+
+      await axios.post(
+        `${PARSE_SERVER_URL}/functions/updateProfile`,
+        {
+          name,
+          phone,
+          email,
+          image: imageUrl
         },
-        body: JSON.stringify(formData)
-      });
+        {
+          headers: {
+            "X-Parse-Application-Id": APP_ID,
+            "X-Parse-Session-Token": sessionToken,
+            "Content-Type": "application/json"
+          }
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
-      }
+      alert("Profile Updated");
 
-      setNotification({
-        open: true,
-        message: 'Profile updated successfully!',
-        severity: 'success'
-      });
     } catch (error) {
-      console.error(error);
-      setNotification({
-        open: true,
-        message: error.message || 'Failed to update profile',
-        severity: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleCloseNotification = () => {
-    setNotification(prev => ({ ...prev, open: false }));
+      console.log(error);
+
+      alert("Update failed");
+
+    }
+
   };
 
   return (
-    <>
-      <StyledPaper elevation={3}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: 'success.main', width: 60, height: 60 }}>
-              <EditIcon fontSize="large" />
-            </Avatar>
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                Update Profile
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Keep your information up to date
-              </Typography>
-            </Box>
-          </Box>
-          <Chip 
-            icon={<VerifiedIcon />} 
-            label="Verified Account" 
-            color="success" 
-            variant="outlined"
-          />
-        </Box>
+    <Box sx={{ maxWidth: 400, mx: "auto", mt: 1 }}>
 
-        <Divider sx={{ mb: 4 }} />
+      <Typography variant="h5" sx={{ textAlign: "center" }} mb={2}>
+        Update Profile
+      </Typography>
 
-        <Box 
-          component="form" 
-          onSubmit={handleSubmit}
+      <Typography sx={{ textAlign: "-webkit-center" }}>
+        <Avatar
+          src={imageUrl}
+          sx={{ width: 100, height: 100, mb: 2, }}
+        />
+      </Typography>
+      <Typography  padding={1} sx={{
+        border:"1px solid grey",
+        borderRadius:"8px"
+      }}>
+      <input type="file" onChange={handleImageChange} />
+      </Typography>
+
+      <form onSubmit={handleSubmit}>
+
+        <TextField
+          label="Name"
+          size="small"
+          fullWidth
+          sx={{ mt: 2 }}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <TextField
+          label="Email"
+          fullWidth
+          size="small"
+          sx={{ mt: 2 }}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <TextField
+          label="Phone"
+          fullWidth
+          size="small"
+          sx={{ mt: 2 }}
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+
+        <Button
+          type="submit"
+          variant="contained"
+          sx={{ mt: 3 }}
+          fullWidth
         >
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <TextField
-                name="name"
-                label="Full Name"
-                placeholder="Enter your full name"
-                variant="outlined"
-                fullWidth
-                value={formData.name}
-                onChange={handleChange}
-                error={!!errors.name}
-                helperText={errors.name}
-                required
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon color={errors.name ? 'error' : 'action'} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                  }
-                }}
-              />
-            </Grid>
+          Update Profile
+        </Button>
 
-            <Grid item xs={12}>
-              <TextField
-                name="phone"
-                label="Phone Number"
-                placeholder="Enter your 10-digit phone number"
-                variant="outlined"
-                fullWidth
-                value={formData.phone}
-                onChange={handleChange}
-                error={!!errors.phone}
-                helperText={errors.phone}
-                required
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PhoneIcon color={errors.phone ? 'error' : 'action'} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                  }
-                }}
-              />
-            </Grid>
+      </form>
 
-            <Grid item xs={12}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="success"
-                size="large"
-                disabled={loading}
-                startIcon={loading ? <SaveIcon /> : <SaveIcon />}
-                fullWidth
-                sx={{
-                  py: 1.8,
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  borderRadius: 2,
-                  fontSize: '1.1rem',
-                  '&:hover': {
-                    backgroundColor: 'success.dark',
-                  }
-                }}
-              >
-                {loading ? 'Updating Profile...' : 'Save Changes'}
-              </Button>
-            </Grid>
-          </Grid>
-        </Box>
-
-        <Box 
-          sx={{ 
-            mt: 4,
-            p: 2,
-            bgcolor: 'grey.50',
-            borderRadius: 2,
-            border: 1,
-            borderColor: 'divider'
-          }}
-        >
-          <Typography variant="body2" color="text.secondary" align="center">
-            <strong>Note:</strong> Your phone number will be used for order updates and account verification.
-            We'll never share your information with third parties.
-          </Typography>
-        </Box>
-      </StyledPaper>
-
-      <Snackbar
-        open={notification.open}
-        autoHideDuration={6000}
-        onClose={handleCloseNotification}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={handleCloseNotification} 
-          severity={notification.severity}
-          variant="filled"
-          elevation={6}
-          sx={{ width: '100%' }}
-        >
-          {notification.message}
-        </Alert>
-      </Snackbar>
-    </>
+    </Box>
   );
 };
 
