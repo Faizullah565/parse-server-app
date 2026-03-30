@@ -63,3 +63,60 @@ export const AdminfetchAllUsers = async (request) => {
     };
   }
 };
+
+export const AdminfetchAllOrders = async (request) => {
+  try {
+    const currentUser = request.user;
+
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Check admin role
+    const roleQuery = new Parse.Query(Parse.Role);
+    roleQuery.equalTo("name", "admin");
+    roleQuery.equalTo("users", currentUser);
+
+    const isAdmin = await roleQuery.first({ useMasterKey: true });
+
+    if (!isAdmin) {
+      throw new Error("Access denied: Admin only");
+    }
+
+    // Fetch orders
+    const query = new Parse.Query("Order");
+    query.descending("createdAt");
+    query.limit(100);
+
+    const orders = await query.find({ useMasterKey: true });
+
+    //  FORMAT DATA (IMPORTANT)
+    const formattedOrders = orders.map(order => ({
+      id: order.id,
+      orderId: order.get("orderId"),
+      status: order.get("status"),
+      totalAmount: order.get("totalAmount"),
+      paymentMethod: order.get("paymentMethod"),
+      isPaid: order.get("isPaid"),
+
+      items: order.get("items"),
+      shippingAddress: order.get("shippingAddress"),
+
+      userId: order.get("user")?.id,
+
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+    }));
+
+    return {
+      success: true,
+      orders: formattedOrders,
+    };
+
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import Parse from "../../../utils/parseClient";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
+import { adminFetchAllOrders } from "../adminServices";
 
 const OrderContext = createContext();
 
@@ -13,17 +14,8 @@ export const AdminOrdersProvider = ({ children }) => {
     let subscription;
 
     const subscribeOrders = async () => {
-      const query = new Parse.Query("Order");
-      const setup = async () => {
-            console.log("🚀 ~ setup ~ query:", query)
-            //  include user info
-            query.include("user");
-            const results = await query.find();
-            setOrders(results.map(o => o.toJSON()));
-      
-          };
-      
-          try {
+      try {
+            const query = new Parse.Query("Order");    
             // 🔥 admin ko sab orders chahiye
             subscription = await query.subscribe();
             
@@ -48,10 +40,9 @@ export const AdminOrdersProvider = ({ children }) => {
             )
           );
           
-          toast.info(`🔄Admin Order Updated #${order.id} (${order.get("status")})`);
+          toast.info(`Admin Order Updated #${order.id} (${order.get("status")})`);
         });
 
-        setup();
       } catch (err) {
         console.error(err);
       }

@@ -2,14 +2,24 @@ import { useEffect, useState } from "react";
 import Parse from "../../../utils/parseClient";
 import { Table, TableHead, TableRow, TableCell, TableBody, Button } from "@mui/material";
 import { useAdminOrders } from "../adminContext/AdminOrdersContext";
+import { adminFetchAllOrders } from "../adminServices";
 // import useAdminOrders from "../adminContext/AdminOrdersContext"
 const AdminOrders = () => {
   // const [orders, setOrders] = useState([]);
-  const { orders} = useAdminOrders()
+  const { orders, setOrders} = useAdminOrders()
 
   console.log("🚀 ~ AdminOrders ~ orders:", orders)
 
-  // 🔥 status update
+  useEffect(()=>{
+    fetchOrders()
+  }, [])
+  
+  const fetchOrders=async()=>{
+    const {result} = await adminFetchAllOrders()
+    console.log("🚀 ~ fetchOrders ~ orders:", result)
+    setOrders(result?.orders)
+  }
+  // status update
   const updateStatus = async (id, status) => {
     const Order = Parse.Object.extend("Order");
     const query = new Parse.Query(Order);
@@ -32,9 +42,9 @@ const AdminOrders = () => {
 
       <TableBody>
         {orders.map((order) => (
-          <TableRow key={order.objectId}>
-            <TableCell>{order.objectId}</TableCell>
-            <TableCell>{order.user?.name}</TableCell>
+          <TableRow key={order.orderId}>
+            <TableCell>{order.orderId}</TableCell>
+            <TableCell>{order.userId}</TableCell>
             <TableCell>{order.status}</TableCell>
 
             <TableCell>

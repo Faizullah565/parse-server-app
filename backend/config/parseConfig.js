@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const config = {
-
+  
   databaseURI: process.env.MONGO_URI,
   appId: process.env.APP_ID,
   masterKey: process.env.MASTER_KEY,

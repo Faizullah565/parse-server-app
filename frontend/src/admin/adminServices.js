@@ -28,4 +28,24 @@ export const adminFetchAllUsers = async () => {
     }
 };
 
+export const adminFetchAllOrders = async () => {
+    try {
+        const {data} = await axios.post(
+            `${PARSE_SERVER_URL}/functions/adminFetchAllOrders`,
+            {},
+            {
+                headers: {
+                    "X-Parse-Application-Id": APP_ID,
+                    "X-Parse-Session-Token": sessionToken,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        console.log("🚀 ~ adminFetchAllUsers ~ data:", data)
+
+        return data;
+    } catch (error) {
+        throw error.response?.data?.error || "Users fetched failed";
+    }
+};
 
