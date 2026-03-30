@@ -60,19 +60,30 @@ export const registerService = async (username, email, password, aclRole) => {
 export const loginService = async (email, password) => {
   try {
     const user = await Parse.User.logIn(email, password);
-    console.log("🚀 ~ loginService ~ user:", user)
+    // console.log("🚀 ~ loginService ~ user:", user)
+    // ////////////////////// get user role
+    const rolePointer = user.get("role");
 
-   
+    let roleName = null;
 
+    if (rolePointer) {
+      const roleQuery = new Parse.Query("_Role");
+      const role = await roleQuery.get(rolePointer.id, { useMasterKey: true });
+
+      roleName = role.get("name"); // 🔥 admin / user / seller
+    }
     return {
       success: true,
       message: "Login Successful",
       user: {
         id: user.id,
-        username: user.get("username"),
+        name: user.get("name"),
+        image:user.get("image"),
         email: user.get("email"),
         sessionToken: user.getSessionToken(),
-        role: user.get("role")
+        phone:user.get("phone"),
+        role: roleName || null,
+        createdAt:user.createdAt,
       }
     }
   } catch (error) {
@@ -132,11 +143,22 @@ export const updateProfileService = async (name, email, phone, image, sessionTok
 
 export const getUserProfileService = async (user) => {
   try {
-    const query  = new Parse.Query(Parse.User);
+    const query = new Parse.Query(Parse.User);
     const currentUser = await query.get(user.id, {
       useMasterKey: true,
     });
 
+    // ////////////////////// get user role
+    const rolePointer = currentUser.get("role");
+
+    let roleName = null;
+
+    if (rolePointer) {
+      const roleQuery = new Parse.Query("_Role");
+      const role = await roleQuery.get(rolePointer.id, { useMasterKey: true });
+
+      roleName = role.get("name"); // 🔥 admin / user / seller
+    }
     // 4. Return clean user profile
     return {
       id: currentUser.id,
@@ -144,8 +166,9 @@ export const getUserProfileService = async (user) => {
       email: currentUser.get("email"),
       phone: currentUser.get("phone"),
       image: currentUser.get("image"),
-      role: currentUser.get("role") || "user",
+      role: roleName || "user",
       createdAt: currentUser.createdAt,
+      
     };
 
   } catch (error) {
@@ -169,22 +192,22 @@ export const changePasswordService = async (oldPassword, newPassword, user) => {
     // Get the user to update
     const query = new Parse.Query(Parse.User);
     const currentUser = await query.get(user.id, { useMasterKey: true });
-    
+
     if (!currentUser) {
       throw new Error("User not found");
     }
 
     // Set the new password
     currentUser.setPassword(newPassword);
-    
+
     // Save the user with master key
     await currentUser.save(null, { useMasterKey: true });
-    
+
     return {
       success: true,
       message: "Password updated successfully"
     };
-    
+
   } catch (error) {
     console.error("Password change error:", error);
     return {

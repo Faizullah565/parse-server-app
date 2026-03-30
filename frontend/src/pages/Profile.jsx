@@ -14,45 +14,55 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { getUserProfile } from '../services/authService.js'
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 const Profile = () => {
-  const [user, setUser] = useState({})
-
+  const {user} = useAuth()
+  console.log("🚀 ~ Profile ~ user:", user)
   const navigate = useNavigate()
-  useEffect(() => {
-    fetchUserProfile()
-  }, [])
+  // const [user, setUser] = useState({})
+  // useEffect(() => {
+  //   fetchUserProfile()
+  // }, [])
 
-  const fetchUserProfile = async () => {
-    try {
-      const profile = await getUserProfile();
-      const data = profile?.result;
+  // const fetchUserProfile = async () => {
+  //   try {
+  //     const profile = await getUserProfile();
+  //     const data = profile?.result;
+  //     console.log("🚀 ~ fetchUserProfile ~ data:", data)
 
-    // CLEAN DATA HERE (MAIN FIX)
-    const cleanedUser = {
-      ...data,
-      role:
-        typeof data?.role === "object"
-          ? data?.role?.name || "user"
-          : data?.role,
-      createdAt:
-        typeof data?.createdAt === "object"
-          ? data?.createdAt?.iso || null
-          : data?.createdAt,
-    }; 
-    setUser(cleanedUser);// Set user state
-    } catch (err) {
-      console.error("Failed to fetch user profile:", err);
-    }
-  }
+  //   // CLEAN DATA HERE (MAIN FIX)
+  //   const cleanedUser = {
+  //     ...data,
+  //     role:
+  //       typeof data?.role === "object"
+  //         ? data?.role?.name || "user"
+  //         : data?.role,
+  //     createdAt:
+  //       typeof data?.createdAt === "object"
+  //         ? data?.createdAt?.iso || null
+  //         : data?.createdAt,
+  //   }; 
+  //   setUser(cleanedUser);// Set user state
+  //   } catch (err) {
+  //     console.error("Failed to fetch user profile:", err);
+  //   }
+  // }
 
   const getInitials = (name) => {
     return name?.charAt(0).toUpperCase();
   };
 
-  const formatDate = (dateString) => {
-  if (!dateString) return "N/A"; // handle undefined/null
-  return new Date(dateString).toLocaleDateString();
-};
+  const formatDate = (dateInput) => {
+  // 1. Check if input exists
+  if (!dateInput) return "N/A";
+
+  // 2. Extract the string if it's an object, otherwise use as-is
+  const dateString = typeof dateInput === 'object' ? dateInput.iso : dateInput;
+
+  // 3. Create date and check for validity
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? "N/A" : date.toLocaleDateString();
+}
 
   const InfoRow = ({ label, value }) => (
     <Box sx={{ mb: 2 }}>
@@ -85,7 +95,7 @@ const Profile = () => {
             }}
           >
             {
-            user.image? <img src={user?.image} alt="" />
+            user?.image? <img src={user?.image} alt="" />
             : getInitials(user?.name)
              }
           </Avatar>

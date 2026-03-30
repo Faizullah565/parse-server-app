@@ -2,10 +2,14 @@ import { useState } from "react";
 import { TextField, Button, Box, Avatar, Typography } from "@mui/material";
 import axios from "axios";
 import { uploadImage } from "../services/productServices";
+import { getUserProfile } from "../services/authService";
+import { useAuth } from "../context/AuthContext";
+import { saveUser } from "../../utils/storedData";
 
 const PARSE_SERVER_URL = import.meta.env.VITE_PARSE_SERVER_URL || "http://localhost:1337/parse";
 const APP_ID = import.meta.env.VITE_PARSE_APP_ID || "parse_server_app";
 const sessionToken = localStorage.getItem("sessionToken");
+console.log("🚀 ~ sessionToken:", sessionToken) 
 
 const UpdateProfile = () => {
 
@@ -13,6 +17,7 @@ const UpdateProfile = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const {setUser} = useAuth()
 
   const handleImageChange = async (e) => {
 
@@ -37,9 +42,10 @@ const UpdateProfile = () => {
   };
 
   const handleSubmit = async (e) => {
-
+    
     e.preventDefault();
-
+    // console.log("🚀 ~ handleSubmit ~ profile:", profile)
+    
     try {
 
       await axios.post(
@@ -58,11 +64,14 @@ const UpdateProfile = () => {
           }
         }
       );
-
+      
       alert("Profile Updated");
-
+      const profile = await getUserProfile()
+      setUser(profile?.result)
+      saveUser("user", profile?.result)
+      
     } catch (error) {
-
+      
       console.log(error);
 
       alert("Update failed");
@@ -79,7 +88,7 @@ const UpdateProfile = () => {
       </Typography>
 
       <Typography sx={{ textAlign: "-webkit-center" }}>
-        <Avatar
+        <Avatar component={"div"}
           src={imageUrl}
           sx={{ width: 100, height: 100, mb: 2, }}
         />

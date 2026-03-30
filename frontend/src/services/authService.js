@@ -67,6 +67,8 @@ export const getUserProfile = async () => {
         },
       }
     );
+  
+    console.log("🚀 ~ getUserProfile ~ response:", response.data.result)
     
     return response?.data;
   } catch (error) {

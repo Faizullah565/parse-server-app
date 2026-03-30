@@ -5,14 +5,20 @@ import App from "./App.jsx";
 import "./index.css";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { CartProvider } from "./context/CartContext.jsx";
+import { OrderProvider } from "./context/OrderContext.jsx";
+import { AdminOrdersProvider } from "./admin/adminContext/AdminOrdersContext.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   // <React.StrictMode>
   <AuthProvider>
     <CartProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <OrderProvider>
+        <AdminOrdersProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </AdminOrdersProvider>
+      </OrderProvider>
     </CartProvider>
   </AuthProvider>
   // </React.StrictMode>

@@ -25,6 +25,10 @@ import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LockIcon from '@mui/icons-material/Lock';
 import PublicIcon from '@mui/icons-material/Public';
+import Parse from '../../utils/parseClient'
+import { toast } from "react-toastify";
+// import Parse from "parse";
+import restoreUser from "../../utils/restoreUser"
 
 const PushNotification = () => {
   const [loading, setLoading] = useState(false);
@@ -36,16 +40,72 @@ const PushNotification = () => {
     severity: 'success'
   });
 
+  // Parse.initialize("parse_server_app_2003");
+
   // Check current notification permission on mount
+  //  1. Permission check
   useEffect(() => {
     checkNotificationPermission();
   }, []);
+
+
+  // //  2. Live Query
+  // useEffect(() => {
+  //   let subscription;
+
+  //   const subscribeLive = async () => {
+  //     try {
+  //       const query = new Parse.Query("Order");
+  //       // query.equalTo("status", "processing"); // remove filter to catch all updates
+  //       // Parse.User.current()
+  //       const currentUser = await restoreUser(); // FIX
+  //       console.log("🚀 ~ subscribeLive ~ currentUser:", currentUser)
+  //       if (!currentUser) {
+  //         console.log("No user logged in");
+  //         return;
+  //       }
+  //       query.equalTo("user", currentUser);
+  //       subscription = await query.subscribe();
+  //       console.log(" LiveQuery Connected");
+
+  //       subscription.on("create", (order) => {
+  //         console.log("Order created:", order.toJSON());
+  //         setNotificationStatus({
+  //           open: true,
+  //           message: `New Order: ${order.get("status")}`,
+  //           severity: "success"
+  //         });
+  //       });
+
+  //       subscription.on("update", (order) => {
+  //         console.log("Order updated:", order.toJSON());
+  //         toast.success("Order Updated")
+  //         console.log("🚀 ~ subscribeLive ~ order user:", order.get("user"))
+  //         setNotificationStatus({
+  //           open: true,
+  //           message: `Order updated: ${order.get("status")}`,
+  //           severity: "success"
+  //         });
+  //       });
+
+  //     } catch (err) {
+  //       console.error(err);
+  //     }
+  //   };
+
+  //   subscribeLive();
+
+  //   return () => {
+  //     if (subscription) subscription.unsubscribe();
+  //   };
+  // }, []);
+  // ///////////////////////////
 
   const checkNotificationPermission = async () => {
     if ('Notification' in window) {
       const isGranted = Notification.permission === 'granted';
       setEnabled(isGranted);
-      
+
       // If permission is granted, also check if we have subscription on server
       if (isGranted) {
         await checkSubscriptionStatus();
@@ -57,7 +117,7 @@ const PushNotification = () => {
     try {
       const APP_ID = import.meta.env.VITE_PARSE_APP_ID || "parse_server_app";
       const sessionToken = localStorage.getItem("sessionToken");
-      
+
       const response = await axios.post(
         `${import.meta.env.VITE_PARSE_SERVER_URL}/functions/check-subscription`,
         {},
@@ -70,7 +130,7 @@ const PushNotification = () => {
         }
       );
       console.log("🚀 ~ checkSubscriptionStatus ~ response:", response)
-      
+
       // If no subscription on server, set enabled false
       if (!response.data?.result?.hasSubscription) {
         setEnabled(false);
@@ -82,7 +142,7 @@ const PushNotification = () => {
 
   const handleToggle = async (event) => {
     const newEnabled = event.target.checked;
-    
+
     if (newEnabled) {
       // Enable notifications
       await handleEnable();
@@ -137,19 +197,19 @@ const PushNotification = () => {
   const handleDisable = async () => {
     try {
       setLoading(true);
-      
+
       // Immediately update UI to show disabled state
       setEnabled(false);
-      
+
       // Remove subscription from server
       await unsubscribeFromPushNotifications();
-      
+
       setNotificationStatus({
         open: true,
         message: 'Notifications disabled successfully. You can also remove browser permissions from settings.',
         severity: 'success'
       });
-      
+
     } catch (error) {
       console.error("Error disabling notifications:", error);
       setNotificationStatus({
@@ -168,16 +228,16 @@ const PushNotification = () => {
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.register('/sw.js');
         console.log('Service Worker Registered', registration);
-        
+
         // Subscribe to push notifications
         const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY || "BJ5r-MojONyp1f8A5CYl3I_IGg7NKW4sKn8r-FZJ3zyNUzpY-P1OtL-gP_8X7g8xPVVYJ7gTDHluTXGCih4FkWU";
-        
+
         if (!vapidKey) {
           throw new Error("VAPID key missing");
         }
-        
+
         const convertedVapidKey = urlBase64ToUint8Array(vapidKey);
-        
+
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: convertedVapidKey
@@ -219,7 +279,7 @@ const PushNotification = () => {
       // Get active subscription
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
-      
+
       if (subscription) {
         // Unsubscribe from push manager
         await subscription.unsubscribe();
@@ -229,7 +289,7 @@ const PushNotification = () => {
       // Remove from server
       const APP_ID = import.meta.env.VITE_PARSE_APP_ID || "parse_server_app";
       const sessionToken = localStorage.getItem("sessionToken");
-      
+
       await axios.post(
         `${import.meta.env.VITE_PARSE_SERVER_URL}/functions/deactivate-subscription`,
         {
@@ -243,7 +303,7 @@ const PushNotification = () => {
           }
         }
       );
-      
+
       console.log("Removed subscription from server");
     } catch (error) {
       console.error("Error unsubscribing:", error);
@@ -290,7 +350,7 @@ const PushNotification = () => {
 
   const getBrowserSettingsSteps = () => {
     const browser = getBrowserName();
-    
+
     const steps = {
       Chrome: [
         "Click the lock icon (🔒) in the address bar",
@@ -395,15 +455,15 @@ const PushNotification = () => {
         </Button>
 
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center' }}>
-          {enabled 
-            ? "Toggle off to disable app notifications" 
+          {enabled
+            ? "Toggle off to disable app notifications"
             : "Toggle on to enable notifications"}
         </Typography>
       </Paper>
 
       {/* Browser Settings Guide Dialog */}
-      <Dialog 
-        open={openBrowserGuide} 
+      <Dialog
+        open={openBrowserGuide}
         onClose={handleCloseBrowserGuide}
         maxWidth="sm"
         fullWidth
@@ -418,16 +478,16 @@ const PushNotification = () => {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Follow these steps to completely manage notifications in your browser:
           </Typography>
-          
+
           <List>
             {getBrowserSettingsSteps().map((step, index) => (
               <ListItem key={index} sx={{ px: 0 }}>
                 <ListItemIcon>
-                  <Box sx={{ 
-                    width: 24, 
-                    height: 24, 
-                    borderRadius: '50%', 
-                    bgcolor: 'primary.main', 
+                  <Box sx={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    bgcolor: 'primary.main',
                     color: 'white',
                     display: 'flex',
                     alignItems: 'center',
@@ -445,7 +505,7 @@ const PushNotification = () => {
 
           <Alert severity="info" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              <strong>Note:</strong> Browser settings affect all websites. 
+              <strong>Note:</strong> Browser settings affect all websites.
               You can always enable notifications again from the same settings.
             </Typography>
           </Alert>

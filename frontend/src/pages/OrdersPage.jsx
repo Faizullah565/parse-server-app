@@ -12,29 +12,15 @@ import { getUserOrders } from "../services/orderService";
 import PageHeader from "../components/orders/PageHeader";
 import EmptyState from "../components/orders/EmptyState";
 import OrderCard from "../components/orders/OrderCard";
+import { useOrders } from "../context/OrderContext";
 
 const OrdersPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { orders, loading } = useOrders();
   const [expandedOrder, setExpandedOrder] = useState(null);
 
-  const fetchOrders = async () => {
-    try {
-      const res = await getUserOrders();
-      setOrders(res.result || []);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
 
   const toggleExpand = (orderId) => {
     setExpandedOrder(expandedOrder === orderId ? null : orderId);
@@ -70,7 +56,7 @@ const OrdersPage = () => {
         {orders.length === 0 ? (
           <EmptyState />
         ) : (
-          orders.map((order, index) => (
+          orders?.map((order, index) => (
             <OrderCard
               key={order.objectId}
               order={order}

@@ -12,9 +12,12 @@ export const config = {
   publicServerURL: `${process.env.SERVER_URL}/parse`,
 
   cloud: () => import("../cloud/main.js"),
+  startLiveQueryServer: true,
+
 
   liveQuery: {
-    classNames: ["Posts", "Comments"]
+    classNames: ["Order", "PushSubscription", "Cart", "Product"],
+    liveQueryServerURL: "ws://localhost:1337/parse"
   },
 
   fileUpload: {

@@ -62,6 +62,7 @@ export const verifyPayment = async ({ paymentIntentId }) => {
     // 🧠 Update Order
     const Order = Parse.Object.extend("Order");
     const query = new Parse.Query(Order);
+    
 
     const order = await query.get(orderId, { useMasterKey: true });
 

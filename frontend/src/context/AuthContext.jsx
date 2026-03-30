@@ -1,30 +1,33 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { getToken, getUser, removeUser, saveToken, saveUser } from "../../utils/storedData";
-const AuthContext = createContext();
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState({});
-  const [token, setToken] = useState(null);
 
+const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(getUser("user") || {});
+  const [sessionToken, setSessionToken] = useState(getToken("sessionToken") || null);
+  
   //======= LOAD TOKEN ON REFRESH ==============
   useEffect(() => {
-    const savedToken = getToken("auth-token");
+    const savedToken = getToken("sessionToken");
+    if (savedToken) setSessionToken(savedToken);
     const savedUser = getUser("user");
-    if (savedToken) setToken(savedToken);
     if (savedUser) setUser(savedUser);
   }, []);
 
   // ==========USER LOGIN ===================
-  const login = (data) => {
+  const login = (userData) => {
+
     //========== SET TOKEN ==========================
-    let token = data?.data?.token
-    saveToken("auth-token", token);
-    //========== SET USER ==========================
-    let user = data?.data?.user
-    saveUser("user", user)
+    saveToken("sessionToken", userData?.user?.sessionToken);
     //========== GET TOKEN ==========================
-    setToken(getToken("auth-token"));
+    setSessionToken(getToken("sessionToken"));
+
+    //========== SET USER ==========================
+    saveUser("user", userData?.user)
     //========== GETT USER ==========================
     setUser(getUser("user"));
+
   };
 
   // ========= UPDATE LOGIN USER PROFILE ==========
@@ -38,12 +41,12 @@ export const AuthProvider = ({ children }) => {
   // ========= LOGOUT USER AND CLEAR LOCALSTORAGE ============
   const logout = () => {
     localStorage.clear();
-    setToken(null);
+    setSessionToken(null);
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, setUser, updateProfile }}>
+    <AuthContext.Provider value={{ user, sessionToken, login, logout, setUser, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

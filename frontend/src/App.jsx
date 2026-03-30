@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Box, CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 // import { initializeParse } from "./parse/config";
@@ -28,6 +28,10 @@ import CartPage from "./pages/CartPage";
 import Checkout from "./pages/Checkout";
 import OrdersPage from "./pages/OrdersPage";
 import MyProductsPage from "./pages/MyProductsPage";
+import AdminLayout from "./admin/layout/AdminLayout";
+import AdminOrders from './admin/pages/Orders'
+import UsersPage from "./admin/pages/Users";
+import ProtectedRoute from "./routes/ProtectedRoute";
 // import AddProduct from "./pages/AddProduct";
 
 // Create theme
@@ -58,7 +62,6 @@ function App() {
   useEffect(() => {
     // Initialize Parse
     // initializeParse();
-
     // Register Service Worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
@@ -86,20 +89,33 @@ function App() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/product/:id" element={<ProductDetails />} />
-            
-            <Route path="/profile" element={<UserProfile />}>
-              <Route index element={<Profile />} />
-              <Route path="orders" element={<OrdersPage />} />
-              <Route path="fetch-my-products" element={<MyProductsPage />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="my-products" element={<MyProducts />} />
-              <Route path="add-product" element={<AddProduct />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/profile" element={<UserProfile />}>
+                <Route index element={<Profile />} />
+                <Route path="orders" element={<OrdersPage />} />
+                <Route path="fetch-my-products" element={<MyProductsPage />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="my-products" element={<MyProducts />} />
+                <Route path="add-product" element={<AddProduct />} />
+              </Route>
+            </Route>
+            <Route element={<ProtectedRoute isAdmin={true} />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Profile />} />
+                {/* <Route path="orders" element={<OrdersPage />} /> */}
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="my-products" element={<MyProducts />} />
+                <Route path="users" element={<UsersPage />} />
+                <Route path="settings" element={<Settings />} />
+
+              </Route>
             </Route>
           </Routes>
         </Box>
         <Footer />
       </Box>
-      <ToastContainer/>
+
+      <ToastContainer />
     </ThemeProvider>
   );
 }

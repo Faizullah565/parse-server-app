@@ -22,10 +22,11 @@ import {
   Login as LoginIcon
 } from "@mui/icons-material";
 import { loginUser } from "../services/authService";
+import { saveUser } from "../../utils/storedData";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
-  
   // Individual state variables
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +34,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
+  const {setUser, login} = useAuth()
+  
   const validateForm = () => {
     if (!email) {
       setError("Email is required");
@@ -64,17 +66,22 @@ export default function Login() {
       const user = await loginUser(email, password);
       console.log("🚀 ~ handleLogin ~ user:", user)
       
-      // Redirect based on user role
-      const userRole = user?.user?.role;
-      localStorage.setItem("sessionToken", user?.user?.sessionToken);
       if(!user.success){
         throw new Error(user.message)
       }
-      if (userRole === "seller") {
-        navigate("/profile/my-products");
-      } else {
-        navigate("/profile");
-      }
+      // Redirect based on user role
+      const setUserToLocalstorage = user?.user;
+      // console.log("🚀 ~ handleLogin ~ userRole:", userRole)
+      login(user)
+      // localStorage.setItem("sessionToken", user?.user?.sessionToken);
+      // saveUser("user", setUserToLocalstorage)
+      setUser(setUserToLocalstorage)
+      // if (userRole === "seller") {
+      //   navigate("/profile/my-products");
+      // } else {
+      //   navigate("/profile");
+      // }
+        navigate(setUserToLocalstorage?.role=="admin"?"/admin":"/profile")
       
     } catch (err) {
       setError(err.message || "Login failed. Please check your credentials.");

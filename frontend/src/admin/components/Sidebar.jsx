@@ -17,74 +17,81 @@ import {
   useTheme,
   useMediaQuery
 } from "@mui/material";
+
 import {
-  Person,
-  ShoppingBag,
-  AddBox,
+  Dashboard,
+  ShoppingCart,
   Inventory,
+  People,
   Settings,
   Logout,
-  AccountCircle,
+  AdminPanelSettings,
   Menu as MenuIcon
 } from "@mui/icons-material";
-import { useAuth } from "../context/AuthContext";
-import Parse from "../../utils/parseClient"
-const ProfileSidebar = () => {
+
+import { useAuth } from "../../context/AuthContext";
+import Parse from "../../../utils/parseClient";
+
+const Sidebar = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
-  const {logout} = useAuth()
+
+  const { logout } = useAuth();
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
   const handleLogout = async () => {
     try {
-      // Your logout logic here
-      console.log("Logout clicked");
-      await Parse.User.logOut()
-      logout()
-      navigate('/login');
+      await Parse.User.logOut();
+      logout();
+      navigate("/login");
     } catch (err) {
       console.error(err);
     }
   };
 
+  // ✅ Admin Menu
   const menuItems = [
-    { text: 'Profile', path: '/profile', icon: <Person /> },
-    { text: 'My Orders', path: '/profile/orders', icon: <ShoppingBag /> },
-    { text: 'Product Listing', path: '/profile/add-product', icon: <AddBox /> },
-    { text: 'My Products', path: '/profile/fetch-my-products', icon: <Inventory /> },
-    { text: 'Settings', path: '/profile/settings', icon: <Settings /> },
+    { text: "Dashboard", path: "/admin", icon: <Dashboard /> },
+    { text: "Orders", path: "/admin/orders", icon: <ShoppingCart /> },
+    // { text: "Products", path: "/admin/products", icon: <Inventory /> },
+    { text: "Users", path: "/admin/users", icon: <People /> },
+    { text: "Settings", path: "/admin/settings", icon: <Settings /> },
   ];
 
-  // Desktop Sidebar Content
+  // ===== Sidebar Content =====
   const sidebarContent = (
     <Box sx={{ width: 280, p: 2 }}>
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <AccountCircle color="primary" />
-        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          My Account
+      {/* Header */}
+      <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
+        <AdminPanelSettings color="primary" />
+        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+          Admin Panel
         </Typography>
       </Box>
 
       <Divider sx={{ mb: 2 }} />
 
+      {/* Menu */}
       <List>
-        {menuItems.map((item, index) => (
+        {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
               component={RouterNavLink}
               to={item.path}
               sx={{
                 borderRadius: 1,
-                '&.active': {
-                  backgroundColor: 'primary.light',
-                  color: 'primary.contrastText',
-                  '& .MuiListItemIcon-root': {
-                    color: 'primary.contrastText',
+                "&.active": {
+                  backgroundColor: "primary.light",
+                  color: "primary.contrastText",
+                  "& .MuiListItemIcon-root": {
+                    color: "primary.contrastText",
                   },
                 },
               }}
@@ -99,22 +106,23 @@ const ProfileSidebar = () => {
 
         <Divider sx={{ my: 2 }} />
 
+        {/* Logout */}
         <ListItem disablePadding>
           <ListItemButton
             onClick={handleLogout}
             sx={{
               borderRadius: 1,
-              color: 'error.main',
-              '&:hover': {
-                backgroundColor: 'error.light',
-                color: 'white',
-                '& .MuiListItemIcon-root': {
-                  color: 'white',
+              color: "error.main",
+              "&:hover": {
+                backgroundColor: "error.light",
+                color: "white",
+                "& .MuiListItemIcon-root": {
+                  color: "white",
                 },
               },
             }}
           >
-            <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
+            <ListItemIcon sx={{ minWidth: 40, color: "inherit" }}>
               <Logout />
             </ListItemIcon>
             <ListItemText primary="Logout" />
@@ -124,35 +132,32 @@ const ProfileSidebar = () => {
     </Box>
   );
 
-  // Mobile Tabs View
+  // ===== Mobile View =====
   if (isMobile) {
     return (
       <>
-        <Paper 
-          square 
-          elevation={1} 
-          sx={{ 
-            position: 'sticky', 
-            top: 0, 
+        {/* Top Tabs */}
+        <Paper
+          square
+          elevation={1}
+          sx={{
+            position: "sticky",
+            top: 0,
             zIndex: 10,
-            borderBottom: '1px solid',
-            borderColor: 'divider'
+            borderBottom: "1px solid",
+            borderColor: "divider",
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', p: 1 }}>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-            >
+          <Box sx={{ display: "flex", alignItems: "center", p: 1 }}>
+            <IconButton onClick={handleDrawerToggle}>
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" sx={{ ml: 2, fontWeight: 'bold' }}>
-              My Account
+
+            <Typography variant="h6" sx={{ ml: 2, fontWeight: "bold" }}>
+              Admin Panel
             </Typography>
           </Box>
-          
+
           <Tabs
             value={activeTab}
             onChange={(e, newValue) => {
@@ -164,9 +169,9 @@ const ProfileSidebar = () => {
             sx={{ px: 1 }}
           >
             {menuItems.map((item) => (
-              <Tab 
-                key={item.text} 
-                icon={item.icon} 
+              <Tab
+                key={item.text}
+                icon={item.icon}
                 label={item.text}
                 iconPosition="start"
                 sx={{ minHeight: 48 }}
@@ -175,29 +180,25 @@ const ProfileSidebar = () => {
           </Tabs>
         </Paper>
 
-        <Drawer
-          anchor="left"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{ keepMounted: true }}
-        >
+        {/* Drawer */}
+        <Drawer open={mobileOpen} onClose={handleDrawerToggle}>
           {sidebarContent}
         </Drawer>
       </>
     );
   }
 
-  // Desktop View
+  // ===== Desktop View =====
   return (
-    <Paper 
+    <Paper
       elevation={0}
-      sx={{ 
+      sx={{
         width: 280,
-        borderRight: '1px solid',
-        borderColor: 'divider',
+        borderRight: "1px solid",
+        borderColor: "divider",
         borderRadius: 0,
-        height: '100%',
-        backgroundColor: 'background.paper'
+        height: "100%",
+        backgroundColor: "background.paper",
       }}
     >
       {sidebarContent}
@@ -205,4 +206,4 @@ const ProfileSidebar = () => {
   );
 };
 
-export default ProfileSidebar;
+export default Sidebar;
