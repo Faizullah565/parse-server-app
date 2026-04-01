@@ -1,4 +1,4 @@
 img.MuiCardMedia-root.MuiCardMedia-media.MuiCardMedia-img.css-gqomt9-MuiCardMedia-root {
-    height: 180px;
-    width: 240px;
+    height: 180px !important;
+    width: 240px !important;
 }

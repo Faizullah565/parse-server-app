@@ -37,7 +37,7 @@ export const uploadImage = async (file) => {
     // console.log("🚀 ~ uploadImage ~ file:", file)
 
     const { data } = await axios.post(
-      `${PARSE_SERVER_URL}/files/${file.name}`,
+      `${PARSE_SERVER_URL}/files/${"uploadImage"}`,
       file,
       {
         headers: {
