@@ -22,7 +22,7 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useCart } from "../context/CartContext";
 import { toast } from "react-toastify";
-
+import "../styles/ProductCard.css"
 
 const StyledCard = styled(Card)(({ theme }) => ({
   height: '100%',
