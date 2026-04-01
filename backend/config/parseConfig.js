@@ -20,11 +20,14 @@ export const config = {
 
   liveQuery: {
     classNames: ["Order", "PushSubscription", "Cart", "Product"],
-    liveQueryServerURL: "ws://localhost:1337/parse"
+    // liveQueryServerURL: "ws://localhost:1337/parse"
   },
 
   fileUpload: {
-    allowedFileUrlDomains: ["localhost"]
+    enableForPublic: true,
+    allowedFileUrlDomains: [
+      `${process.env.AWS_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com`
+    ]
   },
 
   pages: {
@@ -39,9 +42,9 @@ export const config = {
       region: process.env.AWS_REGION,
       // directAccess: true,
       s3overrides: {
-      //This prevents ACL usage
-      ACL: undefined
-    },
+        //This prevents ACL usage
+        ACL: undefined
+      },
     }
   ),
 };
