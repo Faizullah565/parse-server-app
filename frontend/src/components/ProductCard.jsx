@@ -92,12 +92,15 @@ const ProductCard = ({ product }) => {
             <Grid item xs={12} sm={6} md={4} lg={3} key={product.objectId}>
                 <StyledCard>
                     <CardMedia
-                        width="200px"
+                    
+                        // width="200px"
                         component="img"
                         // height="200"
                         image={product.image || "https://via.placeholder.com/300x200?text=No+Image"}
                         alt={product.title}
-                        sx={{ objectFit: 'cover' }}
+                        sx={{ objectFit: 'cover',
+                            maxWidth:"200px"
+                        }}
                     />
 
                     <FavoriteButton
