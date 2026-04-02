@@ -21,7 +21,7 @@ import Profile from "./pages/Profile";
 // import UserProfile from "./pages/UserProfile";
 // import Profile from "./pages/Profile";
 // import Settings from "./pages/Settings";
-import MyProducts from "./pages/MyProducts";
+import MyProducts from "./pages/SellerProducts";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import CartPage from "./pages/CartPage";
@@ -86,10 +86,10 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/products" element={<Products />} />
-            <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route element={<ProtectedRoute />}>
+            <Route path="/cart" element={<CartPage />} />
               <Route path="/profile" element={<UserProfile />}>
                 <Route index element={<Profile />} />
                 <Route path="orders" element={<OrdersPage />} />

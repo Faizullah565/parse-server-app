@@ -38,6 +38,7 @@ import {
     updateCartItemQuantity
 } from "../services/cartService";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import { saveUserCart } from "../../utils/storedData";
 
 const CartPage = () => {
@@ -61,6 +62,7 @@ const CartPage = () => {
         clearCartState,
     } = useCart()
     const { cart } = useCart()// || []
+    const {user, sessionToken} = useAuth()
 
     // Fetch cart items on mount
     useEffect(() => {

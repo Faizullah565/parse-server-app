@@ -13,6 +13,7 @@ import PageHeader from "../components/orders/PageHeader";
 import EmptyState from "../components/orders/EmptyState";
 import OrderCard from "../components/orders/OrderCard";
 import { useOrders } from "../context/OrderContext";
+import { fetchLoginUserProducts } from "../services/productServices";
 
 const OrdersPage = () => {
   const theme = useTheme();
@@ -21,6 +22,7 @@ const OrdersPage = () => {
   const { orders, loading } = useOrders();
   const [expandedOrder, setExpandedOrder] = useState(null);
 
+  fetchLoginUserProducts()
 
   const toggleExpand = (orderId) => {
     setExpandedOrder(expandedOrder === orderId ? null : orderId);

@@ -102,6 +102,7 @@ export const fetchLoginUserProducts = async () => {
       }
     );
 
+    console.log("🚀 ~ fetchLoginUserProducts ~ res:", res)
     return res.data;
   } catch (error) {
     throw error.response?.data?.error || "Fetched login user product failed";

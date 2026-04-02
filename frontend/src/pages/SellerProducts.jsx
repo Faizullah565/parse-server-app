@@ -46,6 +46,7 @@ import {
   Category as CategoryIcon
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
+import { useAuth } from "../context/AuthContext";
 // import { fetchLoginUserProducService, deleteProductService, updateProductService } from "../services/productServices";
 // import { useAuth } from "../context/AuthContext"; // You'll need to create this
 
@@ -62,7 +63,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
 
 const MyProducts = () => {
   // const { user } = useAuth(); // Get logged-in user from auth context
-  const { user } = localStorage.getItem("user")
+  const { user } = useAuth()
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

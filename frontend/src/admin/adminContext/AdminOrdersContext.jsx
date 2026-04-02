@@ -16,10 +16,10 @@ export const AdminOrdersProvider = ({ children }) => {
     const subscribeOrders = async () => {
       try {
             const query = new Parse.Query("Order");    
-            // 🔥 admin ko sab orders chahiye
+            //  admin ko sab orders chahiye
             subscription = await query.subscribe();
             
-            console.log("✅ Admin LiveQuery Connected");
+            console.log(" Admin LiveQuery Connected");
             
             // CREATE
             subscription.on("create", (order) => {

@@ -38,18 +38,18 @@ export const OrderProvider = ({ children }) => {
         query.equalTo("user", currentUser);
 
         subscription = await query.subscribe();
-        console.log("✅ LiveQuery Connected");
+        console.log(" LiveQuery Connected");
 
-        // 🟢 CREATE
+        //  CREATE
         subscription.on("create", (order) => {
-          console.log("🟢 Order Created:", order.toJSON());
+          console.log("Order Created:", order.toJSON());
           setOrders((prev) => [order.toJSON(), ...prev]);
           toast.success(`Order #${order.get("orderId")} created (${order.get("status")})`);
         });
 
-        // 🟡 UPDATE
+        // UPDATE
         subscription.on("update", (updatedOrder) => {
-          console.log("🟡 Order Updated:", updatedOrder.toJSON());
+          console.log("Order Updated:", updatedOrder.toJSON());
           toast.info(`Order #${updatedOrder.get("orderId")} updated → ${updatedOrder.get("status")}`);
           setOrders((prev) =>
             prev.map((order) =>

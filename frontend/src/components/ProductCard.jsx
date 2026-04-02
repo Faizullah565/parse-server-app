@@ -69,7 +69,7 @@ const QuickViewButton = styled(Button)({
 
 const ProductCard = ({ product }) => {
       const [favorites, setFavorites] = useState({});
-      const {addToCart} = useCart()
+      const {addToCart, loading} = useCart()
       const navigate = useNavigate()
     const handleFavoriteToggle = (productId) => {
         setFavorites(prev => ({
@@ -99,7 +99,8 @@ const ProductCard = ({ product }) => {
                         image={product.image || "https://via.placeholder.com/300x200?text=No+Image"}
                         alt={product.title}
                         sx={{ objectFit: 'cover',
-                            maxWidth:"200px"
+                            maxWidth:"215px",
+                            maxHeight:"200px"
                         }}
                     />
 
@@ -176,7 +177,7 @@ const ProductCard = ({ product }) => {
                             variant="contained"
                             startIcon={<CartIcon />}
                             onClick={() => handleAddToCart(product)}
-                            disabled={product.quantity === 0}
+                            disabled={product.quantity === 0 || loading}
                         >
                             {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
                         </Button>

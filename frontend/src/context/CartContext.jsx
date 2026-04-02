@@ -15,7 +15,7 @@ const CartContext = createContext();
 // ============== CART PROVIDER =====================
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState(getUserCart("save-cart") || []);
-  const [fetchedCarts, setFetchedCarts] = useState('');
+  const [loading, setLoading] = useState(false);
   const token = localStorage.getItem("auth-token")
 
   console.log("🚀 ~ CartProvider ~ cart:", cart)
@@ -25,7 +25,8 @@ export const CartProvider = ({ children }) => {
   // ========== ITEM ADD-TO-CART FROM PRODUCTS PAGE =====================
   const addToCart = async (product) => {
     try {
-      // 👉 FIRST: call API
+      setLoading(true)
+      // FIRST: call API
       const { data } = await axios.post(
         `${PARSE_SERVER_URL}/functions/addToCart`,
         product,
@@ -59,6 +60,7 @@ export const CartProvider = ({ children }) => {
       console.error("Add to cart failed:", error);
     }
     saveUserCart("save-cart", cart)
+    setLoading(false)
   };
 
   const updateCartItemQuantityState = (cartItemId, newQuantity) => {
@@ -142,7 +144,7 @@ export const CartProvider = ({ children }) => {
         clearCartState,
         itemsPrice,
         detailsToCart,
-        setFetchedCarts,
+        loading,
         updateCartItemQuantityState,
 
       }}
